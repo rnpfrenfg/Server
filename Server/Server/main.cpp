@@ -1,9 +1,14 @@
 #include "include.h"
 
+#include "Server.h"
 #include "iocp.h"
 
 bool CheckSameProgramExists()
 {
+	const auto CHECK_SAME_NAME_EXISTS = TEXT("asdfasdf");
+	const auto BOUNDARYNAME = TEXT("boundary");
+	const auto NAMESPACENAME = TEXT("namespace");
+
 	HANDLE boundary = CreateBoundaryDescriptor(BOUNDARYNAME, 0);
 
 	BYTE localAdminSID[SECURITY_MAX_SID_SIZE];
@@ -29,7 +34,10 @@ bool CheckSameProgramExists()
 	if (privateNamespace == NULL)
 	{
 		if (err == ERROR_ACCESS_DENIED)//관리자 권한 필요
+		{
+			std::cout << "관리자 계정으로 실행해야 합니다.\n";
 			return false;
+		}
 
 		if (err == ERROR_ALREADY_EXISTS)
 		{
@@ -39,6 +47,7 @@ bool CheckSameProgramExists()
 			else
 			{
 				//Namespace Opened
+				//return true;
 			}
 		}
 		else//Unexpecteed Error
@@ -46,30 +55,26 @@ bool CheckSameProgramExists()
 	}
 
 	TCHAR handleName[64];
-	StringCchPrintf(handleName, _countof(handleName), TEXT("%s\\%s"), NAMESPACENAME, CHECK_SAME_NAME_EXISTS);
-	HANDLE sameExists = CreateEvent(NULL, FALSE, FALSE, handleName);
-	if (GetLastError() == ERROR_ALREADY_EXISTS)
-	{
-		return false;
-	}
-	else
-	{
-		return true;
-	}
+	StringCchPrintf(handleName, _countof(handleName), TEXT("%s\\%s"), NAMESPACENAME, TEXT("Singleton"));
+	//HANDLE sameExists = CreateEvent(NULL, FALSE, FALSE, handleName);
+	HANDLE sameExists = CreateMutex(&sa, FALSE, handleName);
+
+	return err != ERROR_ALREADY_EXISTS;
 }
 
 int main()
 {
-	if (CheckSameProgramExists())
+	if (!(CheckSameProgramExists()))
 	{
-		std::cout << "server running";
+		std::cout << "server running\n";
+		return 0;
 	}
 
 	TCHAR szPort[100];
 	int i = GetPrivateProfileString(_T("SERVER"), _T("PORT"), _T(""), szPort, 100, _T(".\\Server.ini"));
 	if (0 == i)
 	{
-		std::cout << "Server Config Error";
+		std::cout << "Server Config Error\n";
 		return 0;
 	}
 
@@ -78,10 +83,16 @@ int main()
 	SYSTEM_INFO sys;
 	GetSystemInfo(&sys);
 
+	server_list servers;
+
+	server_ptr server(new Server(iocp));
+	servers.push_back(server);
+
 	int processors = sys.dwNumberOfProcessors;
 	iocp.open(processors, processors * 2, _wtoi(szPort));
 
-	std::cout << "Server Port : " << szPort << "\nNow Running!" << std::endl;
+	std::cout << "Server Port : " << _wtoi(szPort) << "\nNow Running!" << std::endl;
 	iocp.accept_loop();
+
 	printf("end\n");
 }
