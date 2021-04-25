@@ -56,10 +56,9 @@ bool CheckSameProgramExists()
 
 	TCHAR handleName[64];
 	StringCchPrintf(handleName, _countof(handleName), TEXT("%s\\%s"), NAMESPACENAME, TEXT("Singleton"));
-	//HANDLE sameExists = CreateEvent(NULL, FALSE, FALSE, handleName);
-	HANDLE sameExists = CreateMutex(&sa, FALSE, handleName);
+	HANDLE sameExists = CreateEvent(NULL, FALSE, FALSE, handleName);
 
-	return err != ERROR_ALREADY_EXISTS;
+	return ERROR_ALREADY_EXISTS != GetLastError();
 }
 
 int main()
