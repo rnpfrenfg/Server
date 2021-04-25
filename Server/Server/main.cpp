@@ -55,7 +55,7 @@ bool CheckSameProgramExists()
 	}
 
 	TCHAR handleName[64];
-	StringCchPrintf(handleName, _countof(handleName), TEXT("%s\\%s"), NAMESPACENAME, TEXT("Singleton"));
+	StringCchPrintf(handleName, _countof(handleName), TEXT("%s\\%s"), NAMESPACENAME, CHECK_SAME_NAME_EXISTS);
 	HANDLE sameExists = CreateEvent(NULL, FALSE, FALSE, handleName);
 
 	return ERROR_ALREADY_EXISTS != GetLastError();
