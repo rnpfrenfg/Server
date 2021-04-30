@@ -142,7 +142,6 @@
     <ClInclude Include="DataMessage.h" />
     <ClInclude Include="include.h" />
     <ClInclude Include="Iocp.h" />
-    <ClInclude Include="MemoryPool.h" />
     <ClInclude Include="Participant.h" />
     <ClInclude Include="Server.h" />
     <ClInclude Include="Session.h" />
@@ -152,7 +151,6 @@
     <ClCompile Include="DataMessage.cpp" />
     <ClCompile Include="Iocp.cpp" />
     <ClCompile Include="main.cpp" />
-    <ClCompile Include="MemoryPool.cpp" />
     <ClCompile Include="Server.cpp" />
     <ClCompile Include="Session.cpp" />
     <ClCompile Include="World.cpp" />
