@@ -56,7 +56,7 @@ void Iocp::accept_loop()
 			continue;
 		}
 
-		if (connect_to_iocp((HANDLE)socket, this, (ULONG_PTR)NULL) == false)
+		if (connect_to_iocp((HANDLE)socket, this->m_iocp, (ULONG_PTR)NULL) == false)
 		{
 			continue;
 		}

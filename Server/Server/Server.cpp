@@ -11,10 +11,10 @@ void Server::handle_accept(SOCKET* sock, SOCKADDR_IN* addr)
 	session_ptr new_session(new Session(*sock, m_world));
 	new_session->start();
 
-	char ip[32];
-	int namelen = sizeof(ip);
-	getsockname(*sock, (sockaddr*)addr, &namelen);
+	int namelen = sizeof(addr);
+	getpeername(*sock, (sockaddr*)addr, &namelen);
+
 	int port = addr->sin_port;
 
-	std::cout << "Client connected : " << ip << " : " << port << std::endl;
+	std::cout << "Client connected : " << inet_ntoa(addr->sin_addr) << " : " << port << std::endl;
 }
