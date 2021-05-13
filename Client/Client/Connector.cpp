@@ -66,6 +66,14 @@ void Connector::RecvThread()
 		{
 			int recvLen = recv(sock, m_msg.body(), toRecv, recvFlag);
 
+#ifdef DUMMY
+			if (recvLen == SOCKET_ERROR)
+			{
+				m_connected = false;
+				return;
+			}
+#endif
+
 			on_recv(recvLen, m_msg.body());
 		}
 		else

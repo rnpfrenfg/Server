@@ -20,11 +20,13 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Connector.cpp" />
+    <ClCompile Include="Dummy.cpp" />
     <ClCompile Include="main.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Connector.h" />
     <ClInclude Include="DataMessage.h" />
+    <ClInclude Include="Dummy.h" />
     <ClInclude Include="include.h" />
     <ClInclude Include="resource.h" />
   </ItemGroup>

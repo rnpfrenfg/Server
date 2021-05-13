@@ -2,10 +2,11 @@
 
 void Session::close()
 {
-	m_world.leave(shared_from_this());
-
 	shutdown(m_socket, SD_BOTH);
 	closesocket(m_socket);
+
+	m_world.leave(shared_from_this());
+	m_write_msgs.clear();
 }
 
 void Session::start()

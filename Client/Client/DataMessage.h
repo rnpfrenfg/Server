@@ -1,10 +1,5 @@
 #pragma once
 
-#include <WinSock2.h>
-#include <Windows.h>
-#include <cstdio>
-#include <cstdlib>
-#include <cstring>
 #include <functional>
 
 class DataMessage

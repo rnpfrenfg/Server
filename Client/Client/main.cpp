@@ -1,11 +1,7 @@
-#define WINDOW_WIDTH 1280		
-#define WINDOW_HEIGHT 500		
-#define WINDOWNAME TEXT("WINDOW")		
-#define CLASSNAME TEXT("CLASS")		
-
 #define _CRT_SECURE_NO_WARNINGS
 
 #include "include.h"
+
 #include "resource.h"
 #include "Connector.h"
 #include "DataMessage.h"
@@ -146,7 +142,7 @@ void OnRecv(int len, char* buffer)
 
 	wchar_t* buf = (wchar_t*) buffer;
 	buf[len] = L'\0';
-	
+
 	EnterCriticalSection(&cs);
 	talkLog += buf;
 	talkLog += L"\r\n";

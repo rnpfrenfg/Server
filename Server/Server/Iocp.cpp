@@ -43,7 +43,6 @@ void Iocp::accept_loop()
 {
 	working = true;
 
-	//start loop
 	SOCKET socket;
 	SOCKADDR_IN clInfo;
 
@@ -92,7 +91,6 @@ void Iocp::open(int max_active_threads, int threads, int port)
 
 	}
 
-	//create iocp
 	SYSTEM_INFO sys;
 	GetSystemInfo(&sys);
 
