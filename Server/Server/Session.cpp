@@ -2,11 +2,14 @@
 
 void Session::close()
 {
+	m_world.leave(shared_from_this());
+
 	shutdown(m_socket, SD_BOTH);
 	closesocket(m_socket);
 
-	m_world.leave(shared_from_this());
+	EnterCriticalSection(&cs);
 	m_write_msgs.clear();
+	LeaveCriticalSection(&cs);
 }
 
 void Session::start()
@@ -17,6 +20,7 @@ void Session::start()
 
 void Session::deliver(const DataMessage& msg)
 {
+	EnterCriticalSection(&cs);
 	bool write_in_progress = !m_write_msgs.empty();
 	m_write_msgs.push_back(msg);
 	if (!write_in_progress)
@@ -25,6 +29,7 @@ void Session::deliver(const DataMessage& msg)
 			m_write_msgs.front().length(),
 			std::bind(&Session::handle_write,shared_from_this(),std::placeholders::_1));
 	}
+	LeaveCriticalSection(&cs);
 }
 
 void Session::handle_read_header(BOOL failed)
@@ -58,8 +63,11 @@ void Session::handle_write(BOOL failed)
 {
 	if (!failed)
 	{
+		EnterCriticalSection(&cs);
 		m_write_msgs.pop_front();
-		if (!m_write_msgs.empty())
+		bool end = m_write_msgs.empty();
+		LeaveCriticalSection(&cs);
+		if (!end)
 		{
 			Iocp::async_write(m_socket, m_write_msgs.front(),
 				m_write_msgs.front().length(),

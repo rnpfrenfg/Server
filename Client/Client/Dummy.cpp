@@ -15,6 +15,11 @@ void dummyRecv(int len, char* buffer)
 {
 }
 
+void DummyRecvThread(Connector* c)
+{
+	c->RecvThread();
+}
+
 void dummyThread(wchar_t ch)
 {
 	wchar_t test[50];
@@ -23,9 +28,12 @@ void dummyThread(wchar_t ch)
 
 	Connector c;
 	c.Connect("127.0.0.1", 12341);
+	c.on_recv = dummyRecv;
 
 	if (!c.IsConnected())
 		return;
+
+	new std::thread(DummyRecvThread, &c);
 
 	while (true)
 	{
