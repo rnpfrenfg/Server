@@ -3,7 +3,23 @@
 
 #include "DataMessage.h"
 
-typedef std:: function<void(SOCKET*, SOCKADDR_IN*)> IocpAcceptHandler;
+typedef std::function<void(SOCKET*, SOCKADDR_IN*)> IocpAcceptHandler;
+
+typedef std::function<void(int error)> IocpCallback;
+
+class IOInfo
+{
+public:
+	IOInfo()
+	{
+		memset(&(overlapped), 0, sizeof(overlapped));
+	}
+	~IOInfo() = default;
+
+	OVERLAPPED overlapped;
+	WSABUF wsabuf;
+	IocpCallback callback;
+};
 
 class Iocp
 {
@@ -14,7 +30,7 @@ public:
 
 	static void async_read_body(SOCKET sock, DataMessage* msg, int len, IocpCallback func);
 
-	static void async_read(SOCKET sock, DataMessage* msg, IocpCallback func);
+	static void async_read(SOCKET sock, DataMessage* msg, IocpCallback func, IOInfo* ioInfo);
 
 public:
 	IocpAcceptHandler acceptHandler;
@@ -24,11 +40,7 @@ public:
 
 	bool is_working();
 
-	//TODO
-	void end_read(BOOL failed, DataMessage* msg);
 private:
-	int recv_flags = 0;
-
 	bool working;
 
 	HANDLE m_iocp;

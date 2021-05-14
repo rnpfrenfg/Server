@@ -2,28 +2,28 @@
 
 World::World()
 {
-	InitializeCriticalSection(&cs);
+	InitializeSRWLock(&lock);
 }
 
 void World::join(participant_ptr participant)
 {
-	EnterCriticalSection(&cs);
+	AcquireSRWLockExclusive(&lock);
 	m_participants.insert(participant);
+	ReleaseSRWLockExclusive(&lock);
 
 	std::for_each(m_recent_msgs.begin(), m_recent_msgs.end(), std::bind(&Participant::deliver, participant, std::placeholders::_1));
-	LeaveCriticalSection(&cs);
 }
 
 void World::leave(participant_ptr participant)
 {
-	EnterCriticalSection(&cs);
+	AcquireSRWLockExclusive(&lock);
 	m_participants.erase(participant);
-	LeaveCriticalSection(&cs);
+	ReleaseSRWLockExclusive(&lock);
 }
 
 void World::deliver(const DataMessage& msg)
 {
-	EnterCriticalSection(&cs);
+	AcquireSRWLockShared(&lock);
 	std::for_each(m_participants.begin(), m_participants.end(), std::bind(&Participant::deliver, std::placeholders::_1, std::ref(msg)));
-	LeaveCriticalSection(&cs);
+	ReleaseSRWLockShared(&lock);
 }

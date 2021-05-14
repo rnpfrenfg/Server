@@ -16,21 +16,18 @@ void iocp_thread(HANDLE handle, Iocp* iocp)
 	DWORD recvLen;
 
 	SOCKET* sock;
-	DataMessage* msg;
+	IOInfo* ioInfo;
 
 	BOOL failed;
 
 	while (true)
 	{
-		failed = !GetQueuedCompletionStatus(handle, &recvLen, (ULONG_PTR*)&sock, (LPOVERLAPPED*)&msg, INFINITE);
+		failed = !GetQueuedCompletionStatus(handle, &recvLen, (ULONG_PTR*)&sock, (LPOVERLAPPED*)&ioInfo, INFINITE);
 
-		iocp->end_read(failed, msg);
+		ioInfo->callback(failed);
+		delete ioInfo;
 		continue;
 	}
-}
-void Iocp::end_read(BOOL failed, DataMessage* msg)
-{
-	msg->callback(failed);
 }
 
 void create_iocp_threads(Iocp* p, HANDLE iocp, int threads)
@@ -101,7 +98,7 @@ void Iocp::open(int max_active_threads, int threads, int port)
 	}
 
 	create_iocp_threads(this, iocp, threads);
-	
+
 	m_iocp = iocp;
 }
 
@@ -112,49 +109,52 @@ bool Iocp::is_working()
 
 void Iocp::async_read_header(SOCKET sock, DataMessage* msg, IocpCallback func)
 {
-	msg->wsabuf.buf = msg->data();
-	msg->wsabuf.len = DataMessage::header_length;
-	msg->callback = func;
-	async_read(sock, msg, func);
+	IOInfo* ioInfo = new IOInfo;
+	ioInfo->wsabuf.buf = msg->data();
+	ioInfo->wsabuf.len = DataMessage::header_length;
+	ioInfo->callback = func;
+	async_read(sock, msg, func, ioInfo);
 }
 
 void Iocp::async_read_body(SOCKET sock, DataMessage* msg, int len, IocpCallback func)
 {
-	msg->wsabuf.buf = msg->body();
-	msg->wsabuf.len = len;
-	msg->callback = func;
-	async_read(sock, msg, func);
+	IOInfo* ioInfo = new IOInfo;
+	ioInfo->wsabuf.buf = msg->body();
+	ioInfo->wsabuf.len = len;
+	ioInfo->callback = func;
+	async_read(sock, msg, func, ioInfo);
 }
 
-void Iocp::async_read(SOCKET sock, DataMessage* msg, IocpCallback func)
+void Iocp::async_read(SOCKET sock, DataMessage* msg, IocpCallback func, IOInfo* ioInfo)
 {
 	static DWORD recv_flags = MSG_WAITALL;
-	int error = WSARecv(sock, &msg->wsabuf, 1, NULL, &recv_flags, &msg->overlapped, NULL);
+	int error = WSARecv(sock, &ioInfo->wsabuf, 1, NULL, &recv_flags, &ioInfo->overlapped, NULL);
 	if (error == SOCKET_ERROR)
 	{
 		int err = WSAGetLastError();
 		if (err != WSA_IO_PENDING)
 		{
 			func(1);
-			return;
+			delete ioInfo;
 		}
 	}
 }
 
 void Iocp::async_write(SOCKET sock, DataMessage& msg, int len, IocpCallback func)
 {
-	msg.wsabuf.buf = msg.data();
-	msg.wsabuf.len = len;
-	msg.callback = func;
+	IOInfo* ioInfo = new IOInfo;
+	ioInfo->wsabuf.buf = msg.data();
+	ioInfo->wsabuf.len = len;
+	ioInfo->callback = func;
 
-	int result = WSASend(sock, &msg.wsabuf, 1, NULL, 0, &msg.overlapped, NULL);
+	int result = WSASend(sock, &ioInfo->wsabuf, 1, NULL, 0, &ioInfo->overlapped, NULL);
 	if (result != 0)
 	{
 		int err = WSAGetLastError();
-		if (err == WSA_IO_PENDING)
+		if (err != WSA_IO_PENDING)
 		{
 			func(1);
-			return;
+			delete ioInfo;
 		}
 	}
 }

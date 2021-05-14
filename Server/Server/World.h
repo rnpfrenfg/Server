@@ -18,6 +18,6 @@ private:
 	enum {max_recent_msgs = 0};
 	DataMessageQueue m_recent_msgs;
 
-	CRITICAL_SECTION cs;
+	SRWLOCK lock;
 };
 

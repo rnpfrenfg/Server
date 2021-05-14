@@ -1,33 +1,14 @@
 #pragma once
 
-#include <WinSock2.h>
-#include <Windows.h>
-#include <cstdio>
-#include <cstdlib>
-#include <cstring>
 #include <functional>
-
-class Iocp;
-
-typedef std::function<void(int error)> IocpCallback;
 
 class DataMessage
 {
-private:
-	friend class Iocp;
-
-	OVERLAPPED overlapped;
-	WSABUF wsabuf;
-	IocpCallback callback;
-
 public:
-	enum { header_length = sizeof(int)};
+	enum { header_length = sizeof(int) };
 	enum { max_body_length = 2048 };
 
-	DataMessage()
-	{
-		memset(&(overlapped), 0, sizeof(overlapped));
-	}
+	DataMessage() = default;
 
 	const char* data()  const
 	{

@@ -1,21 +1,17 @@
 #include "Session.h"
 
+void Session::start()
+{
+	m_world.join(shared_from_this());
+	Iocp::async_read_header(m_socket, &m_read_msg, std::bind(&Session::handle_read_header, shared_from_this(), std::placeholders::_1));
+}
+
 void Session::close()
 {
 	m_world.leave(shared_from_this());
 
 	shutdown(m_socket, SD_BOTH);
 	closesocket(m_socket);
-
-	EnterCriticalSection(&cs);
-	m_write_msgs.clear();
-	LeaveCriticalSection(&cs);
-}
-
-void Session::start()
-{
-	m_world.join(shared_from_this());
-	Iocp::async_read_header(m_socket, &m_read_msg, std::bind(&Session::handle_read_header, shared_from_this(), std::placeholders::_1));
 }
 
 void Session::deliver(const DataMessage& msg)
@@ -23,13 +19,14 @@ void Session::deliver(const DataMessage& msg)
 	EnterCriticalSection(&cs);
 	bool write_in_progress = !m_write_msgs.empty();
 	m_write_msgs.push_back(msg);
+	LeaveCriticalSection(&cs);
+
 	if (!write_in_progress)
 	{
-		Iocp::async_write(m_socket, m_write_msgs.front(), 
+		Iocp::async_write(m_socket, m_write_msgs.front(),
 			m_write_msgs.front().length(),
-			std::bind(&Session::handle_write,shared_from_this(),std::placeholders::_1));
+			std::bind(&Session::handle_write, shared_from_this(), std::placeholders::_1));
 	}
-	LeaveCriticalSection(&cs);
 }
 
 void Session::handle_read_header(BOOL failed)
@@ -61,21 +58,23 @@ void Session::handle_read_body(BOOL failed)
 
 void Session::handle_write(BOOL failed)
 {
-	if (!failed)
+	if (failed)
 	{
 		EnterCriticalSection(&cs);
-		m_write_msgs.pop_front();
-		bool end = m_write_msgs.empty();
+		m_write_msgs.clear();
 		LeaveCriticalSection(&cs);
-		if (!end)
-		{
-			Iocp::async_write(m_socket, m_write_msgs.front(),
-				m_write_msgs.front().length(),
-				std::bind(&Session::handle_write, shared_from_this(), std::placeholders::_1));
-		}
+		return;
 	}
-	else
+
+	EnterCriticalSection(&cs);
+	m_write_msgs.pop_front();
+	bool end = m_write_msgs.empty();
+	LeaveCriticalSection(&cs);
+
+	if (!end)
 	{
-		close();
+		Iocp::async_write(m_socket, m_write_msgs.front(),
+			m_write_msgs.front().length(),
+			std::bind(&Session::handle_write, shared_from_this(), std::placeholders::_1));
 	}
 }
