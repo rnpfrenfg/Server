@@ -38,8 +38,7 @@ void UpdateButton()
 void CUpdateDlg()
 {
 	SetDlgItemText(hwnd, IDC_EDIT6, talkLog.c_str());
-	int lines = Edit_GetFileLineCount((HWND) dlgEdit);
-	SendMessage((HWND)dlgEdit, EM_LINESCROLL, 99, 99);
+	SendMessage((HWND)dlgEdit, EM_LINESCROLL, INT_MAX, INT_MAX);
 }
 
 void RecvThread()
@@ -62,7 +61,7 @@ INT_PTR CALLBACK winProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 		::hwnd = hwnd;
 		dlgEdit = GetDlgItem(hwnd, IDC_EDIT6);
 
-		SetDlgItemText(hwnd, IDC_STATIC, L"");
+		SetDlgItemText(hwnd, IDC_STATIC1, L"");
 		SetDlgItemText(hwnd, IDC_STATIC2, L"Address");
 		SetDlgItemText(hwnd, IDC_STATIC3, L"Port");
 

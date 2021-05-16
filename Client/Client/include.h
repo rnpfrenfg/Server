@@ -2,12 +2,9 @@
 
 #define _WINSOCK_DEPRECATED_NO_WARNINGS
 
-#define _AFXDLL
-
-#include <afxwin.h>
-
 #pragma comment (lib, "ws2_32.lib")
 #include <WinSock2.h>
+#include <Windows.h>
 #include <stdlib.h>
 #include <malloc.h>
 #include <memory.h>
