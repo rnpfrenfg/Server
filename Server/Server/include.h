@@ -21,5 +21,6 @@
 #include <functional>
 
 #include "DataMessage.h"
+#include "CSocket.h"
 
 typedef std::deque<DataMessage> DataMessageQueue;

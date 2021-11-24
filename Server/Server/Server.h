@@ -9,7 +9,7 @@ class Server
 {
 public:
 	Server(Iocp& iocp);
-	void handle_accept(SOCKET* sock, SOCKADDR_IN* addr);
+	void handle_accept(CSocket* sock, SOCKADDR_IN* addr);
 private:
 	Iocp& m_iocp;
 	World m_world;

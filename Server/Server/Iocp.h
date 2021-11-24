@@ -1,9 +1,11 @@
 #pragma once
 #include "include.h"
 
+#include "CSocket.h"
+#include "MemoryPool.h"
 #include "DataMessage.h"
 
-typedef std::function<void(SOCKET*, SOCKADDR_IN*)> IocpAcceptHandler;
+typedef std::function<void(CSocket*, SOCKADDR_IN*)> IocpAcceptHandler;
 
 typedef std::function<void(int error)> IocpCallback;
 
@@ -19,23 +21,27 @@ public:
 	OVERLAPPED overlapped;
 	WSABUF wsabuf;
 	IocpCallback callback;
+	void* _pool;
+
+	static void* operator new(size_t) = delete;
+	static void operator delete(void*) = delete;
 };
 
 class Iocp
 {
+	typedef MemoryPool<IOInfo> PoolType;
 public:
-	static void async_write(SOCKET sock, DataMessage& msg, int len, IocpCallback func);
+	inline static IOInfo* CreateNewIoInfo(CSocket&);
 
-	static void async_read_header(SOCKET sock, DataMessage* msg, IocpCallback func);
-
-	static void async_read_body(SOCKET sock, DataMessage* msg, int len, IocpCallback func);
-
-	static void async_read(SOCKET sock, DataMessage* msg, IocpCallback func, IOInfo* ioInfo);
+	static void async_write(CSocket& sock, DataMessage& msg, int len, IocpCallback func);
+	static void async_read_header(CSocket& sock, DataMessage* msg, IocpCallback func);
+	static void async_read_body(CSocket& sock, DataMessage* msg, int len, IocpCallback func);
+	static void async_read(CSocket& sock, DataMessage* msg, IocpCallback func, IOInfo* ioInfo);
 
 public:
 	IocpAcceptHandler acceptHandler;
 
-	void open(int max_active_threads, int threads, int port);
+	bool open(int max_active_threads, int threads, int port);
 	void accept_loop();
 
 	bool is_working();
@@ -47,4 +53,6 @@ private:
 
 	SOCKET m_server;
 	WSADATA wsa;
+
+	PoolType pool;
 };

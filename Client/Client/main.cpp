@@ -6,6 +6,12 @@
 #include "Connector.h"
 #include "DataMessage.h"
 
+#ifdef DUMMY
+#include "Dummy.h"
+DummyClient dummy;
+#endif
+
+
 Connector con;
 
 HANDLE connectButton;
@@ -85,6 +91,11 @@ INT_PTR CALLBACK winProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 		{
 		case IDC_BUTTON1:
 		{
+#ifdef DUMMY
+			dummy.GO(100);
+			return true;
+#endif
+
 			GetDlgItemTextA(hwnd, IDC_EDIT2, ip, sizeof(ip));
 			GetDlgItemTextA(hwnd, IDC_EDIT5, port, sizeof(port));
 
@@ -95,6 +106,10 @@ INT_PTR CALLBACK winProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 			if (con.IsConnected())
 			{
 				recvThread = new std::thread(RecvThread);
+			}
+			else
+			{
+				MessageBox(NULL, L"Fail", L"Notice", MB_OK);
 			}
 		}
 		return true;

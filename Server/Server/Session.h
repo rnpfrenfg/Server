@@ -3,18 +3,19 @@
 #include "Participant.h"
 #include "World.h"
 #include "Iocp.h"
+#include "CSocket.h"
 
 class Session : public Participant, public std::enable_shared_from_this<Session>
 {
 public:
-	Session(SOCKET sock, World& world)
+	Session(CSocket sock, World& world)
 		: m_socket(sock),
 		m_world(world)
 	{
 		InitializeCriticalSection(&cs);
 	}
 
-	SOCKET socket()
+	CSocket socket()
 	{
 		return m_socket;
 	}
@@ -27,7 +28,7 @@ public:
 	void handle_write(BOOL failed);
 
 private:
-	SOCKET m_socket;
+	CSocket m_socket;
 	World& m_world;
 	DataMessage m_read_msg;
 	DataMessageQueue m_write_msgs;

@@ -65,7 +65,7 @@ int main()
 {
 	if (!(CheckSameProgramExists()))
 	{
-		std::cout << "server running\n";
+		std::cout << "server already opend...\n";
 		return 0;
 	}
 
@@ -77,21 +77,24 @@ int main()
 		return 0;
 	}
 
-	Iocp iocp;
-
 	SYSTEM_INFO sys;
 	GetSystemInfo(&sys);
+
+	Iocp iocp;
+	int processors = sys.dwNumberOfProcessors;
+	if (!iocp.open(processors, processors * 2, _wtoi(szPort)))
+	{
+		std::cout << "Cannot open server\n";
+		return 0;
+	}
 
 	server_list servers;
 
 	server_ptr server(new Server(iocp));
 	servers.push_back(server);
 
-	int processors = sys.dwNumberOfProcessors;
-	iocp.open(processors, processors * 2, _wtoi(szPort));
-
 	std::cout << "Server Port : " << _wtoi(szPort) << "\nNow Running!" << std::endl;
 	iocp.accept_loop();
 
-	printf("end\n");
+	std::cout << "end";
 }

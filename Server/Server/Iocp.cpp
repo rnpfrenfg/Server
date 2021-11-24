@@ -1,5 +1,7 @@
 #include "iocp.h"
 
+typedef MemoryPool<IOInfo> PoolType;
+
 HANDLE new_iocp(DWORD threads)
 {
 	return CreateIoCompletionPort(INVALID_HANDLE_VALUE, NULL, 0, threads);
@@ -25,7 +27,7 @@ void iocp_thread(HANDLE handle, Iocp* iocp)
 		failed = !GetQueuedCompletionStatus(handle, &recvLen, (ULONG_PTR*)&sock, (LPOVERLAPPED*)&ioInfo, INFINITE);
 
 		ioInfo->callback(failed);
-		delete ioInfo;
+		((PoolType*)ioInfo->_pool)->Delete(ioInfo);
 		continue;
 	}
 }
@@ -40,9 +42,11 @@ void Iocp::accept_loop()
 {
 	working = true;
 
+	CSocket csock;
 	SOCKET socket;
 	SOCKADDR_IN clInfo;
 
+	csock.__iocp = &pool;
 	int addrLen = sizeof(clInfo);
 	while (true)
 	{
@@ -57,19 +61,22 @@ void Iocp::accept_loop()
 			continue;
 		}
 
-		acceptHandler(&socket, &clInfo);
+		csock.sock = socket;
+		acceptHandler(&csock, &clInfo);
 	}
 }
 
-void Iocp::open(int max_active_threads, int threads, int port)
+bool Iocp::open(int max_active_threads, int threads, int port)
 {
-	WSAStartup(MAKEWORD(2, 2), &wsa);
+	pool.Init(100000, false);
+
+	auto err = WSAStartup(MAKEWORD(2, 2), &wsa);
+	if (err)
+		return false;
 
 	m_server = socket(AF_INET, SOCK_STREAM, 0);
 	if (m_server == INVALID_SOCKET)
-	{
-		//TODO
-	}
+		return false;
 
 	SOCKADDR_IN sock_info;
 	memset(&sock_info, 0, sizeof(sock_info));
@@ -77,29 +84,24 @@ void Iocp::open(int max_active_threads, int threads, int port)
 	sock_info.sin_port = htons(port);
 	sock_info.sin_addr.S_un.S_addr = htonl(INADDR_ANY);
 
-	auto err = bind(m_server, (SOCKADDR*)&sock_info, sizeof(sock_info));
+	err = bind(m_server, (SOCKADDR*)&sock_info, sizeof(sock_info));
 	if (err == SOCKET_ERROR)
-	{
+		return false;
 
-	}
 	err = listen(m_server, SOMAXCONN);
 	if (err == SOCKET_ERROR)
-	{
-
-	}
+		return false;
 
 	SYSTEM_INFO sys;
 	GetSystemInfo(&sys);
 
 	HANDLE iocp = new_iocp(max_active_threads);
 	if (iocp == INVALID_HANDLE_VALUE)
-	{
-
-	}
-
+		return false;
 	create_iocp_threads(this, iocp, threads);
 
 	m_iocp = iocp;
+	return true;
 }
 
 bool Iocp::is_working()
@@ -107,54 +109,61 @@ bool Iocp::is_working()
 	return working;
 }
 
-void Iocp::async_read_header(SOCKET sock, DataMessage* msg, IocpCallback func)
+IOInfo* Iocp::CreateNewIoInfo(CSocket& sock)
 {
-	IOInfo* ioInfo = new IOInfo;
+	IOInfo* info = ((PoolType*)sock.__iocp)->New();
+	info->_pool = sock.__iocp;
+	return info;
+}
+
+void Iocp::async_read_header(CSocket& sock, DataMessage* msg, IocpCallback func)
+{
+	IOInfo* ioInfo = CreateNewIoInfo(sock);
 	ioInfo->wsabuf.buf = msg->data();
 	ioInfo->wsabuf.len = DataMessage::header_length;
 	ioInfo->callback = func;
 	async_read(sock, msg, func, ioInfo);
 }
 
-void Iocp::async_read_body(SOCKET sock, DataMessage* msg, int len, IocpCallback func)
+void Iocp::async_read_body(CSocket& sock, DataMessage* msg, int len, IocpCallback func)
 {
-	IOInfo* ioInfo = new IOInfo;
+	IOInfo* ioInfo = CreateNewIoInfo(sock);
 	ioInfo->wsabuf.buf = msg->body();
 	ioInfo->wsabuf.len = len;
 	ioInfo->callback = func;
 	async_read(sock, msg, func, ioInfo);
 }
 
-void Iocp::async_read(SOCKET sock, DataMessage* msg, IocpCallback func, IOInfo* ioInfo)
+void Iocp::async_read(CSocket& sock, DataMessage* msg, IocpCallback func, IOInfo* ioInfo)
 {
 	static DWORD recv_flags = MSG_WAITALL;
-	int error = WSARecv(sock, &ioInfo->wsabuf, 1, NULL, &recv_flags, &ioInfo->overlapped, NULL);
+	int error = WSARecv(sock.sock, &ioInfo->wsabuf, 1, NULL, &recv_flags, &ioInfo->overlapped, NULL);
 	if (error == SOCKET_ERROR)
 	{
 		int err = WSAGetLastError();
 		if (err != WSA_IO_PENDING)
 		{
 			func(1);
-			delete ioInfo;
+			((PoolType*)sock.__iocp)->Delete(ioInfo);
 		}
 	}
 }
 
-void Iocp::async_write(SOCKET sock, DataMessage& msg, int len, IocpCallback func)
+void Iocp::async_write(CSocket& sock, DataMessage& msg, int len, IocpCallback func)
 {
-	IOInfo* ioInfo = new IOInfo;
+	IOInfo* ioInfo = CreateNewIoInfo(sock);
 	ioInfo->wsabuf.buf = msg.data();
 	ioInfo->wsabuf.len = len;
 	ioInfo->callback = func;
 
-	int result = WSASend(sock, &ioInfo->wsabuf, 1, NULL, 0, &ioInfo->overlapped, NULL);
+	int result = WSASend(sock.sock, &ioInfo->wsabuf, 1, NULL, 0, &ioInfo->overlapped, NULL);
 	if (result != 0)
 	{
 		int err = WSAGetLastError();
 		if (err != WSA_IO_PENDING)
 		{
 			func(1);
-			delete ioInfo;
+			((PoolType*)sock.__iocp)->Delete(ioInfo);
 		}
 	}
 }

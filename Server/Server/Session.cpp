@@ -10,8 +10,8 @@ void Session::close()
 {
 	m_world.leave(shared_from_this());
 
-	shutdown(m_socket, SD_BOTH);
-	closesocket(m_socket);
+	shutdown(m_socket.sock, SD_BOTH);
+	closesocket(m_socket.sock);
 }
 
 void Session::deliver(const DataMessage& msg)

@@ -139,9 +139,11 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClInclude Include="CSocket.h" />
     <ClInclude Include="DataMessage.h" />
     <ClInclude Include="include.h" />
     <ClInclude Include="Iocp.h" />
+    <ClInclude Include="MemoryPool.h" />
     <ClInclude Include="Participant.h" />
     <ClInclude Include="Server.h" />
     <ClInclude Include="Session.h" />
