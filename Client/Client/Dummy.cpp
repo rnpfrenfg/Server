@@ -22,9 +22,16 @@ void DummyRecvThread(Connector* c)
 
 void dummyThread(wchar_t ch)
 {
-	wchar_t test[50];
+	wchar_t test[129] = { ch,'\0' };
 
-	_snwprintf(test, _countof(test), L"%c", ch);
+	_snwprintf(test, sizeof(test), L"%s%s", test, test);
+	_snwprintf(test, sizeof(test), L"%s%s", test, test);
+	_snwprintf(test, sizeof(test), L"%s%s", test, test);
+	_snwprintf(test, sizeof(test), L"%s%s", test, test);
+	_snwprintf(test, sizeof(test), L"%s%s", test, test);
+	_snwprintf(test, sizeof(test), L"%s%s", test, test);
+	
+	int wlen = wcslen(test) * sizeof(wchar_t);
 
 	Connector c;
 	c.Connect("127.0.0.1", 12341);
@@ -37,13 +44,12 @@ void dummyThread(wchar_t ch)
 
 	while (true)
 	{
+
 		if (!c.IsConnected())
 		{
-			char aaa[] = { ch,'\0' };
-			MessageBoxA(NULL, "disconnected", aaa, MB_OK);
 			return;
 		}
-		c.Send(test, _countof(test));
+		c.Send(test, wlen);
 	}
 }
 

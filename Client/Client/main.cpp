@@ -6,6 +6,8 @@
 #include "Connector.h"
 #include "DataMessage.h"
 
+#define DUMMY
+
 #ifdef DUMMY
 #include "Dummy.h"
 DummyClient dummy;
@@ -92,7 +94,7 @@ INT_PTR CALLBACK winProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 		case IDC_BUTTON1:
 		{
 #ifdef DUMMY
-			dummy.GO(100);
+			dummy.GO(20);
 			return true;
 #endif
 
@@ -124,7 +126,7 @@ INT_PTR CALLBACK winProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 		case IDC_BUTTON3:
 		{
 			int len = GetDlgItemText(hwnd, IDC_EDIT1, toSend, DataMessage::max_body_length / 2);
-			con.Send(toSend, _countof(toSend));
+			con.Send(toSend, sizeof(wchar_t) * wcslen(toSend));
 		}
 		return true;
 
@@ -155,7 +157,7 @@ void OnRecv(int len, char* buffer)
 	}
 
 	wchar_t* buf = (wchar_t*) buffer;
-	buf[len] = L'\0';
+	buf[len / sizeof(wchar_t)] = L'\0';
 
 	EnterCriticalSection(&cs);
 	talkLog += buf;
