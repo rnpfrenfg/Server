@@ -1,0 +1,7 @@
+//select db before query
+
+create table chat(
+	time timestamp default current_timestamp,
+	uuid varchar(20),
+	msg varchar(200)
+);

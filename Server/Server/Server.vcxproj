@@ -169,6 +169,9 @@
   <ItemGroup>
     <None Include="Server.ini" />
   </ItemGroup>
+  <ItemGroup>
+    <Text Include="create_table_query.txt" />
+  </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
   </ImportGroup>
