@@ -24,3 +24,5 @@
 #include "CSocket.h"
 
 typedef std::deque<DataMessage> DataMessageQueue;
+
+#define USE_MYSQL

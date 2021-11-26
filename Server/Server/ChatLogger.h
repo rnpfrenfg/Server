@@ -56,26 +56,10 @@ public:
 		bind[1].is_null = 0;
 		bind[1].length = nullptr;
 
-		stmtLock.lock();//TODO
+		stmtLock.lock();
 		mysql_stmt_bind_param(insertChatLog, bind);
 		mysql_stmt_execute(insertChatLog);
 		stmtLock.unlock();
-
-
-		//
-		/*
-				MYSQL_RES* res;
-		MYSQL_ROW row;
-
-		mysql_query(&conn, "select uuid,msg from chat");
-
-		res = mysql_store_result(&conn);        // 데이터베이스로부터 받은 값 변수에 넣기
-		while ((row = mysql_fetch_row(res)) != NULL)
-		{        // 디비로 부터 받은 데이터 활용
-			printf("%s::::::::::::%s\n", row[0], row[1]);                                  //여러 값을 받개되면 배열 뒤에 붙어짐 ex) row[1], row[2]
-
-		}
-		*/
 	}
 
 private:
