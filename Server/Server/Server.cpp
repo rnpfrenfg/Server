@@ -7,9 +7,18 @@ Server::Server(Iocp& iocp)
 	iocp.acceptHandler = std::bind(&Server::handle_accept, this, std::placeholders::_1, std::placeholders::_2);
 }
 
+#include <mutex>
+static std::mutex tempUUIDLock;
+
 void Server::handle_accept(CSocket* sock, SOCKADDR_IN* addr)
 {
-	session_ptr new_session(new Session(*sock, m_world));
+	static int tempUUID = 0;
+	tempUUIDLock.lock();
+	int id = tempUUID++;
+	tempUUIDLock.unlock();
+	UserUID uuid = std::to_string(id);
+
+	session_ptr new_session(new Session(*sock, std::make_shared<UserUID>(uuid), m_world));
 	new_session->start();
 
 	int namelen = sizeof(addr);

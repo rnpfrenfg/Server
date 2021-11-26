@@ -1,5 +1,7 @@
 #include "include.h"
 
+#include <conio.h>
+
 #include "Server.h"
 #include "iocp.h"
 
@@ -33,9 +35,9 @@ bool CheckSameProgramExists()
 	DWORD err = GetLastError();
 	if (privateNamespace == NULL)
 	{
-		if (err == ERROR_ACCESS_DENIED)//관리자 권한 필요
+		if (err == ERROR_ACCESS_DENIED)
 		{
-			std::cout << "관리자 계정으로 실행해야 합니다.\n";
+			std::cout << "you must run as administrator...\n";
 			return false;
 		}
 
@@ -61,11 +63,23 @@ bool CheckSameProgramExists()
 	return ERROR_ALREADY_EXISTS != GetLastError();
 }
 
+#include "ChatLogger.h"
+
 int main()
 {
-	if (!(CheckSameProgramExists()))
+#ifdef USE_MYSQL
+	if (!(ChatLogger::Init("127.0.0.1", "root", "qwerasdf", "chat_logger", 3306)))
+	{
+		std::cout << "cannot login to mysql...";
+		_getch();
+		return 0;
+	}
+#endif
+
+	if ((CheckSameProgramExists()))
 	{
 		std::cout << "server already opend...\n";
+		_getch();
 		return 0;
 	}
 
@@ -74,6 +88,7 @@ int main()
 	if (0 == i)
 	{
 		std::cout << "Server Config Error\n";
+		_getch();
 		return 0;
 	}
 
@@ -85,6 +100,7 @@ int main()
 	if (!iocp.open(processors, processors * 2, _wtoi(szPort)))
 	{
 		std::cout << "Cannot open server\n";
+		_getch();
 		return 0;
 	}
 

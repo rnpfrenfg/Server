@@ -4,13 +4,15 @@
 #include "World.h"
 #include "Iocp.h"
 #include "CSocket.h"
+#include "UserUID.h"
 
 class Session : public Participant, public std::enable_shared_from_this<Session>
 {
 public:
-	Session(CSocket sock, World& world)
+	Session(CSocket sock, std::shared_ptr<UserUID> uuid, World& world)
 		: m_socket(sock),
-		m_world(world)
+		m_world(world),
+		uuid(uuid)
 	{
 		InitializeCriticalSection(&cs);
 	}
@@ -33,6 +35,7 @@ private:
 	DataMessage m_read_msg;
 	DataMessageQueue m_write_msgs;
 	CRITICAL_SECTION cs;
+	std::shared_ptr<UserUID> uuid;
 };
 
 typedef std::shared_ptr<Session> session_ptr;
