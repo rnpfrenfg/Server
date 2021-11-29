@@ -52,6 +52,7 @@ void Connect()
 
 	if (thred != nullptr)
 	{
+		thred->join();
 		delete thred;
 		thred = nullptr;
 	}
