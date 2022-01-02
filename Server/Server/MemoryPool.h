@@ -1,12 +1,8 @@
 #pragma once
 
+#include <Windows.h>
 #include <mutex>
 #include <stack>
-
-#define PrintError
-#ifdef PrintError
-#include <iostream>
-#endif
 
 template<class T>
 class MemoryPool
@@ -17,7 +13,7 @@ public:
 	{
 		if (mPool != nullptr)
 		{
-			delete[] mPool;
+			VirtualFree(mPool, 0, MEM_RELEASE);
 			delete[] remain;
 		}
 
@@ -25,9 +21,12 @@ public:
 			CloseHandle(objectReturnedEvent);
 	}
 
-	DWORD Init(int size, bool waitForNewObject)
+	DWORD Init(__int64 size, bool waitForNewObject)
 	{
-		mPool = new T[size];
+		mPool = (T*)VirtualAlloc(NULL, sizeof(T) * size, MEM_RESERVE | MEM_COMMIT, PAGE_READWRITE);
+		if (mPool == nullptr)
+			return GetLastError();
+
 		mSize = size;
 
 		remainSize = size;
@@ -45,6 +44,8 @@ public:
 				return GetLastError();
 			}
 		}
+
+		return 0;
 	}
 
 	T* New()
@@ -62,11 +63,8 @@ public:
 				needEventCall++;
 				lock.unlock();
 
-#ifdef PrintError
-				std::cout << "wait new....\n";
-#endif
 				WaitForSingleObject(objectReturnedEvent, INFINITE);
-				
+
 				newObjLock.lock();
 				T* returnVal = newObjects.top();
 				newObjects.pop();
@@ -81,19 +79,20 @@ public:
 			}
 		}
 
-		RETURN:
+	RETURN:
 		remainSize--;
 		T* returnVal = remain[remainSize];
 		lock.unlock();
 
 		return returnVal;
 	}
-	
+
 	void Delete(T* obj)
 	{
 		lock.lock();
 		if (needEventCall)
 		{
+			needEventCall--;
 			lock.unlock();
 
 			newObjLock.lock();
@@ -101,7 +100,6 @@ public:
 			newObjLock.unlock();
 
 			SetEvent(objectReturnedEvent);
-			needEventCall--;
 			return;
 		}
 
@@ -111,11 +109,16 @@ public:
 		lock.unlock();
 	}
 
+	inline __int64 size()
+	{
+		return mSize;
+	}
+
 private:
 	T* mPool = nullptr;
 	T** remain = nullptr;
-	int mSize;
-	int remainSize;
+	__int64 mSize;
+	__int64 remainSize;
 
 	std::mutex lock;
 
