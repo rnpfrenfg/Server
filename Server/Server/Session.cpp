@@ -1,9 +1,5 @@
 #include "Session.h"
 
-#ifdef USE_MYSQL
-#include "ChatLogger.h"
-#endif
-
 void Session::start()
 {
 	m_world.join(shared_from_this());
@@ -52,9 +48,6 @@ void Session::handle_read_body(BOOL failed)
 	if (!failed)
 	{
 		m_world.deliver(m_read_msg);
-#ifdef USE_MYSQL
-		ChatLogger::GetInstance()->Log(uuid.get(), (wchar_t*) m_read_msg.body(), m_read_msg.body_length());
-#endif
 		Iocp::async_read_header(m_socket, &m_read_msg, std::bind(&Session::handle_read_header, shared_from_this(), std::placeholders::_1));
 	}
 	else

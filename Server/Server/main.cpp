@@ -63,34 +63,11 @@ bool CheckSameProgramExists()
 	return ERROR_ALREADY_EXISTS != GetLastError();
 }
 
-#include "ChatLogger.h"
-
 int main()
 {
-#ifdef USE_MYSQL
-	char ip[30];
-	char id[30];
-	char pw[30];
-	char dbname[30];
-	char port[30];
-
-	GetPrivateProfileStringA(("MYSQL"), ("ip"), (""), ip, 30, (".\\Server.ini"));
-	GetPrivateProfileStringA(("MYSQL"), ("id"), (""), id, 30, (".\\Server.ini"));
-	GetPrivateProfileStringA(("MYSQL"), ("pw"), (""), pw, 30, (".\\Server.ini"));
-	GetPrivateProfileStringA(("MYSQL"), ("db"), ("db"), dbname, 30, (".\\Server.ini"));
-	GetPrivateProfileStringA(("MYSQL"), ("port"), (""), port, 30, (".\\Server.ini"));
-
-	if (!(ChatLogger::Init(ip, id, pw, dbname, atoi(port))))
+	if (false && !(CheckSameProgramExists()))
 	{
-		std::cout << "cannot login to mysql...";
-		_getch();
-		return 0;
-	}
-#endif
-
-	if (!(CheckSameProgramExists()))
-	{
-		std::cout << "server program is running...\n";
+		std::cout << "already running...\n";
 		_getch();
 		return 0;
 	}

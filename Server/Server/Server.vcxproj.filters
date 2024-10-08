@@ -42,9 +42,6 @@
     <ClInclude Include="CSocket.h">
       <Filter>헤더 파일</Filter>
     </ClInclude>
-    <ClInclude Include="ChatLogger.h">
-      <Filter>헤더 파일</Filter>
-    </ClInclude>
     <ClInclude Include="UserUID.h">
       <Filter>헤더 파일</Filter>
     </ClInclude>
@@ -66,9 +63,6 @@
       <Filter>소스 파일</Filter>
     </ClCompile>
     <ClCompile Include="Session.cpp">
-      <Filter>소스 파일</Filter>
-    </ClCompile>
-    <ClCompile Include="ChatLogger.cpp">
       <Filter>소스 파일</Filter>
     </ClCompile>
   </ItemGroup>

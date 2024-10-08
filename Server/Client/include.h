@@ -11,7 +11,6 @@
 #include <tchar.h>
 #include <sddl.h>
 #include <strsafe.h>
-#include <Windows.h>
 #include <thread>
 #include <iostream>
 #include <list>
@@ -19,8 +18,3 @@
 #include <algorithm>
 #include <deque>
 #include <functional>
-
-#include "DataMessage.h"
-#include "CSocket.h"
-
-typedef std::deque<DataMessage> DataMessageQueue;
