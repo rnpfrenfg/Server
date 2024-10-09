@@ -2,6 +2,8 @@
 
 #include <functional>
 
+#pragma pack(push, 1)
+
 class DataMessage
 {
 public:
@@ -73,3 +75,5 @@ private:
 	char m_data[header_length + max_body_length];
 	size_t m_body_length;
 };
+
+#pragma pack(pop)
