@@ -125,11 +125,11 @@ void Iocp::async_read_header(CSocket& sock, DataMessage* msg, IocpCallback func)
 	async_read(sock, msg, func, ioInfo);
 }
 
-void Iocp::async_read_body(CSocket& sock, DataMessage* msg, int len, IocpCallback func)
+void Iocp::async_read_body(CSocket& sock, DataMessage* msg, IocpCallback func)
 {
 	IOInfo* ioInfo = CreateNewIoInfo(sock);
 	ioInfo->wsabuf.buf = msg->body();
-	ioInfo->wsabuf.len = len;
+	ioInfo->wsabuf.len = msg->body_length();
 	ioInfo->callback = func;
 	async_read(sock, msg, func, ioInfo);
 }

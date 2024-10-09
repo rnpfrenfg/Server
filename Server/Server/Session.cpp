@@ -32,9 +32,7 @@ void Session::handle_read_header(BOOL failed)
 {
 	if (!failed && m_read_msg.decode_header())
 	{
-		Iocp::async_read_body(m_socket, 
-			&m_read_msg, 
-			m_read_msg.body_length(), 
+		Iocp::async_read_body(m_socket, &m_read_msg, 
 			std::bind(&Session::handle_read_body, shared_from_this(), std::placeholders::_1));
 	}
 	else
