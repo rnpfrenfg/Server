@@ -46,11 +46,6 @@ bool CheckSameProgramExists()
 			privateNamespace = OpenPrivateNamespace(boundary, NAMESPACENAME);
 			if (privateNamespace == NULL)
 				return false;
-			else
-			{
-				//Namespace Opened
-				//return true;
-			}
 		}
 		else//Unexpecteed Error
 			return false;

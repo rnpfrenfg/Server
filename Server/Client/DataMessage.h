@@ -5,7 +5,7 @@
 class DataMessage
 {
 public:
-	enum { header_length = sizeof(int) };
+	enum { header_length = 8 };
 	enum { max_body_length = 2048 };
 
 	DataMessage() = default;
