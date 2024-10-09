@@ -17,7 +17,7 @@ HANDLE dlgEdit;
 char ip[50];
 char port[50];
 
-wchar_t toSend[DataMessage::max_body_length / sizeof(wchar_t)];
+DataMessage dataMessage;
 
 CRITICAL_SECTION cs;
 std::wstring talkLog;
@@ -112,8 +112,9 @@ INT_PTR CALLBACK winProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 
 		case IDC_BUTTON3:
 		{
-			int len = GetDlgItemText(hwnd, IDC_EDIT1, toSend, DataMessage::max_body_length / 2);
-			con.Send(toSend, sizeof(wchar_t) * wcslen(toSend));
+			int len = GetDlgItemText(hwnd, IDC_EDIT1, (wchar_t*)dataMessage.body(), DataMessage::max_body_length);
+			dataMessage.body_length(len*2);
+			con.Send(&dataMessage);
 		}
 		return true;
 

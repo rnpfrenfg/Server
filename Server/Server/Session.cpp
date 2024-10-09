@@ -24,7 +24,6 @@ void Session::deliver(const DataMessage& msg)
 	if (!write_in_progress)
 	{
 		Iocp::async_write(m_socket, m_write_msgs.front(),
-			m_write_msgs.front().length(),
 			std::bind(&Session::handle_write, shared_from_this(), std::placeholders::_1));
 	}
 }
@@ -74,7 +73,6 @@ void Session::handle_write(BOOL failed)
 	if (!end)
 	{
 		Iocp::async_write(m_socket, m_write_msgs.front(),
-			m_write_msgs.front().length(),
 			std::bind(&Session::handle_write, shared_from_this(), std::placeholders::_1));
 	}
 }

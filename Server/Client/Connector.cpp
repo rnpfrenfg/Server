@@ -40,14 +40,10 @@ bool Connector::IsConnected()
 	return m_connected;
 }
 
-void Connector::Send(void* buf, size_t len)
+void Connector::Send(DataMessage* msg)
 {
-	char header[DataMessage::header_length + 1];
-
-	sprintf_s(header, "%4d", len);
-
-	send(sock, (const char*)header, DataMessage::header_length, 0);
-	send(sock, (const char*)buf, len, 0);
+	msg->encode_header();
+	send(sock, msg->data(), msg->length(), 0);
 }
 
 void Connector::RecvThread()
@@ -65,15 +61,6 @@ void Connector::RecvThread()
 		if (sizeRecved)
 		{
 			int recvLen = recv(sock, m_msg.body(), toRecv, recvFlag);
-
-#ifdef DUMMY
-			if (recvLen == SOCKET_ERROR)
-			{
-				m_connected = false;
-				return;
-			}
-#endif
-
 			on_recv(recvLen, m_msg.body());
 		}
 		else

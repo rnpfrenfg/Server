@@ -10,7 +10,7 @@
 Connector conn;
 char ip[100];
 char szport[100];
-wchar_t input[1000];
+DataMessage msg;
 std::thread* thred = nullptr;
 
 void Disconnect()
@@ -104,13 +104,14 @@ int main()
 			if (!conn.IsConnected())
 				break;
 
-			wscanf(L"%s", input);
-			len = sizeof(wchar_t) * wcslen(input);
+			wscanf(L"%s", msg.body());
+			len = sizeof(wchar_t) * wcslen((const wchar_t*) msg.body());
 
 			if (len == 0)
 				continue;
+			msg.body_length(len);
 
-			conn.Send(input, len);
+			conn.Send(&msg);
 		}
 	}
 }

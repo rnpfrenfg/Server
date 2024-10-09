@@ -14,7 +14,7 @@ class Connector
 public:
 	Connector() = default;
 
-	void Send(void* buf, size_t len);
+	void Send(DataMessage* msg);
 	void RecvThread();
 	void Connect(const char* ip, u_short port);
 	bool IsConnected();

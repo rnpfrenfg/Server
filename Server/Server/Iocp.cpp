@@ -149,11 +149,12 @@ void Iocp::async_read(CSocket& sock, DataMessage* msg, IocpCallback func, IOInfo
 	}
 }
 
-void Iocp::async_write(CSocket& sock, DataMessage& msg, int len, IocpCallback func)
+void Iocp::async_write(CSocket& sock, DataMessage& msg, IocpCallback func)
 {
 	IOInfo* ioInfo = CreateNewIoInfo(sock);
+	msg.encode_header();
 	ioInfo->wsabuf.buf = msg.data();
-	ioInfo->wsabuf.len = len;
+	ioInfo->wsabuf.len = msg.length();
 	ioInfo->callback = func;
 
 	int result = WSASend(sock.sock, &ioInfo->wsabuf, 1, NULL, 0, &ioInfo->overlapped, NULL);

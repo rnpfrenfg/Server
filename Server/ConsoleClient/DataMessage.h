@@ -65,7 +65,7 @@ public:
 	{
 		using namespace std;
 		char header[header_length + 1] = "";
-		sprintf_s(header, "%4d", m_body_length);
+		sprintf_s(header, "%8d", m_body_length);
 		memcpy(m_data, header, header_length);
 	}
 

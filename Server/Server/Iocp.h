@@ -33,7 +33,7 @@ class Iocp
 public:
 	inline static IOInfo* CreateNewIoInfo(CSocket&);
 
-	static void async_write(CSocket& sock, DataMessage& msg, int len, IocpCallback func);
+	static void async_write(CSocket& sock, DataMessage& msg, IocpCallback func);
 	static void async_read_header(CSocket& sock, DataMessage* msg, IocpCallback func);
 	static void async_read_body(CSocket& sock, DataMessage* msg, int len, IocpCallback func);
 	static void async_read(CSocket& sock, DataMessage* msg, IocpCallback func, IOInfo* ioInfo);
